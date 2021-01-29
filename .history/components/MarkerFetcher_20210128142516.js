@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
 const db = firebase.app();
 
 export default function MarkerFetcher(props) {
+  console.log(props.listReports);
   return (
     <View
       style={{
@@ -46,6 +47,7 @@ export default function MarkerFetcher(props) {
             }}
           ></Marker>
         ))}
+        ;
       </MapView>
       <StatusBar style="auto" />
     </View>

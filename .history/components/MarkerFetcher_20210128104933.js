@@ -1,6 +1,7 @@
 import { Component } from "react";
 import React, { useState, useEffect } from "react";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import { render } from "react-dom";
 import { StatusBar } from "expo-status-bar";
 
 import { StyleSheet, Text, View, YellowBox } from "react-native";
@@ -8,15 +9,42 @@ import { StyleSheet, Text, View, YellowBox } from "react-native";
 import { firebaseConfig } from "../database/Firebase";
 import * as firebase from "firebase/app"; //npm i firebase@7.9.0
 import "firebase/firestore";
+import Markers from "./Markers";
 
 //components
+import ItemReport from "./ItemReport";
+YellowBox.ignoreWarnings(["Setting X timer"]); //no deja que muestre el warning
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.app();
 
-export default function MarkerFetcher(props) {
+export default function MarkerFetcher() {
+  const [listReports, setListReports] = useState([]);
+  const [LocalLatit, setLatitude] = useState("");
+  const [LocalLongi, setLongitude] = useState("");
+  const [id, setId] = useState("");
+  const [bandera, setBandera] = useState(true);
+
+  useEffect(() => {
+    getReports();
+  }, []);
+
+  const getReports = async () => {
+    let list = [];
+    const response = await db.firestore().collection("report").get();
+    response.forEach((document) => {
+      let id = document.id;
+      let LocalLatit = document.data().LocalLatit;
+      let LocalLongi = document.data().LocalLongi;
+      let obj = { id, LocalLatit, LocalLongi };
+      list.push(obj);
+    });
+
+    setListReports(list);
+  };
+
   return (
     <View
       style={{
@@ -35,18 +63,8 @@ export default function MarkerFetcher(props) {
           latitudeDelta: 0.05953,
           longitudeDelta: 0.044982,
         }}
-      >
-        {props.listReports.map((report) => (
-          <Marker
-            coordinate={{
-              latitude: parseFloat(report.LocalLatit),
-              longitude: parseFloat(report.LocalLongi),
-              latitudeDelta: parseFloat(report.latitudeDelta),
-              longitudeDelta: parseFloat(report.longitudeDelta),
-            }}
-          ></Marker>
-        ))}
-      </MapView>
+      ></MapView>
+      <Text>BBB</Text>
       <StatusBar style="auto" />
     </View>
   );

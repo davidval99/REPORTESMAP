@@ -39,14 +39,18 @@ export default function MarkerFetcher(props) {
         {props.listReports.map((report) => (
           <Marker
             coordinate={{
-              latitude: parseFloat(report.LocalLatit),
-              longitude: parseFloat(report.LocalLongi),
-              latitudeDelta: parseFloat(report.latitudeDelta),
-              longitudeDelta: parseFloat(report.longitudeDelta),
+              latitude: report.LocalLatit,
+              longitude: report.LocalLongi,
+              latitudeDelta: report.latitudeDelta,
+              longitudeDelta: report.longitudeDelta,
             }}
+            title={"XX"}
+            description={"BBB"}
           ></Marker>
         ))}
+        ;
       </MapView>
+      <Text>BBB</Text>
       <StatusBar style="auto" />
     </View>
   );

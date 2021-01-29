@@ -17,6 +17,7 @@ if (!firebase.apps.length) {
 const db = firebase.app();
 
 export default function MarkerFetcher(props) {
+  console.log(props.listReports);
   return (
     <View
       style={{
@@ -44,9 +45,13 @@ export default function MarkerFetcher(props) {
               latitudeDelta: parseFloat(report.latitudeDelta),
               longitudeDelta: parseFloat(report.longitudeDelta),
             }}
+            title={"XX"}
+            description={"BBB"}
           ></Marker>
         ))}
+        ;
       </MapView>
+      <Text>BBB</Text>
       <StatusBar style="auto" />
     </View>
   );

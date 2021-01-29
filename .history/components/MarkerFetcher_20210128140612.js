@@ -16,7 +16,31 @@ if (!firebase.apps.length) {
 }
 const db = firebase.app();
 
-export default function MarkerFetcher(props) {
+export default function MarkerFetcher() {
+  const [listReports, setListReports] = useState([]);
+  const [LocalLatit, setLatitude] = useState("");
+  const [LocalLongi, setLongitude] = useState("");
+  const [id, setId] = useState("");
+  const [bandera, setBandera] = useState(true);
+
+  useEffect(() => {
+    getReports();
+  }, []);
+
+  const getReports = async () => {
+    let list = [];
+    const response = await db.firestore().collection("report").get();
+    response.forEach((document) => {
+      let id = document.id;
+      let LocalLatit = document.data().LocalLatit;
+      let LocalLongi = document.data().LocalLongi;
+      let obj = { id, LocalLatit, LocalLongi };
+      list.push(obj);
+    });
+
+    setListReports(list);
+  };
+
   return (
     <View
       style={{
@@ -36,17 +60,21 @@ export default function MarkerFetcher(props) {
           longitudeDelta: 0.044982,
         }}
       >
-        {props.listReports.map((report) => (
+        {props.data.map((report) => (
           <Marker
             coordinate={{
-              latitude: parseFloat(report.LocalLatit),
-              longitude: parseFloat(report.LocalLongi),
-              latitudeDelta: parseFloat(report.latitudeDelta),
-              longitudeDelta: parseFloat(report.longitudeDelta),
+              latitude: report.LocalLatit,
+              longitude: report.LocalLongi,
+              latitudeDelta: 0.05953,
+              longitudeDelta: 0.044982,
             }}
+            title={"XX"}
+            description={"BBB"}
           ></Marker>
         ))}
+        ;
       </MapView>
+      <Text>BBB</Text>
       <StatusBar style="auto" />
     </View>
   );

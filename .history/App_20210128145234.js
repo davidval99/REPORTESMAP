@@ -5,7 +5,7 @@ import MarkerFetcher from "./components/MarkerFetcher";
 import { firebaseConfig } from "./database/Firebase";
 import * as firebase from "firebase/app"; //npm i firebase@7.9.0
 import "firebase/firestore";
-import { LogBox, Text } from "react-native";
+import { Text } from "react-native";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
@@ -24,6 +24,7 @@ export default function App() {
     const response = await db.firestore().collection("report").get();
     let a = 0;
     response.forEach((document) => {
+      console.log(a++);
       const id = document.id;
       const {
         LocalLatit,
@@ -41,6 +42,8 @@ export default function App() {
           longitudeDelta,
         });
       }
+
+      list = list.slice(0, 76);
     });
     setListReports(list);
   };

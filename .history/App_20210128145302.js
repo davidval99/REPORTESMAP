@@ -24,6 +24,7 @@ export default function App() {
     const response = await db.firestore().collection("report").get();
     let a = 0;
     response.forEach((document) => {
+      console.log(a++);
       const id = document.id;
       const {
         LocalLatit,
@@ -41,6 +42,9 @@ export default function App() {
           longitudeDelta,
         });
       }
+
+      list = list.slice(0, 76);
+      console.log(list.length);
     });
     setListReports(list);
   };
