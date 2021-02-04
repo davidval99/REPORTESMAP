@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import MainTabScreen from "./screens/MainTabScreen";
+import { DrawerContent } from "./screens/DrawerContent";
 
-import MarkerFetcher from "./components/MarkerFetcher";
-import { firebaseConfig } from "./database/Firebase";
-import SupportScreen from "./screens/SupportScreen";
-import HomeScreen from "./screens/HomeScreen";
-import * as firebase from "firebase/app"; //npm i firebase@7.9.0
-import "firebase/firestore";
+import { AuthContext } from "./components/context";
+import RootStackScreen from "./screens/RootStackScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { View, ActivityIndicator, Text } from "react-native";
 import {
   NavigationContainer,
@@ -21,18 +19,19 @@ import {
   DarkTheme as PaperDarkTheme,
 } from "react-native-paper";
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.app();
-
 const Drawer = createDrawerNavigator();
 
 export default function App() {
-  const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
-  const [listReports, setListReports] = useState([]);
+  // const [isLoading, setIsLoading] = React.useState(true);
+  // const [userToken, setUserToken] = React.useState(null);
 
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
+
+  const initialLoginState = {
+    isLoading: true,
+    userName: null,
+    userToken: null,
+  };
 
   const CustomDefaultTheme = {
     ...NavigationDefaultTheme,
@@ -56,65 +55,120 @@ export default function App() {
     },
   };
 
-  useEffect(() => {
-    getReports();
-  }, []);
+  const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
 
-  const getReports = async () => {
-    let list = [];
-    const response = await db.firestore().collection("report").get();
-    let a = 0;
-    response.forEach((document) => {
-      const id = document.id;
-      const {
-        itemID,
-        Name,
-        OBSERVACION,
-        OLOR,
-        TAMANO,
-        TIPO,
-        ESTADO,
-        Date_Obs,
-        Time_Obs,
-        LocalLatit,
-        LocalLongi,
-        V_Prec_Obs: latitudeDelta,
-        H_Prec_Obs: longitudeDelta,
-      } = document.data();
-
-      if (LocalLatit && LocalLongi && latitudeDelta && longitudeDelta) {
-        list.push({
-          id,
-          itemID,
-          Name,
-          OBSERVACION,
-          OLOR,
-          TAMANO,
-          TIPO,
-          ESTADO,
-          Date_Obs,
-          Time_Obs,
-          LocalLatit,
-          LocalLongi,
-          latitudeDelta,
-          longitudeDelta,
-        });
-      }
-    });
-    setListReports(list);
+  const loginReducer = (prevState, action) => {
+    switch (action.type) {
+      case "RETRIEVE_TOKEN":
+        return {
+          ...prevState,
+          userToken: action.token,
+          isLoading: false,
+        };
+      case "LOGIN":
+        return {
+          ...prevState,
+          userName: action.id,
+          userToken: action.token,
+          isLoading: false,
+        };
+      case "LOGOUT":
+        return {
+          ...prevState,
+          userName: null,
+          userToken: null,
+          isLoading: false,
+        };
+      case "REGISTER":
+        return {
+          ...prevState,
+          userName: action.id,
+          userToken: action.token,
+          isLoading: false,
+        };
+    }
   };
 
-  //return (
-  //  <NavigationContainer theme={theme}>
-  //    <Drawer.Navigator initialRouteName="Home">
-  //      <Drawer.Screen name="Home" component={MainTabScreen} />
-  //    </Drawer.Navigator>
-  //  </NavigationContainer>
-  //);
-  //}
+  const [loginState, dispatch] = React.useReducer(
+    loginReducer,
+    initialLoginState
+  );
 
-  if (listReports.length > 0) {
-    return <MarkerFetcher listReports={listReports} />;
+  const authContext = React.useMemo(
+    () => ({
+      signIn: async (foundUser) => {
+        // setUserToken('fgkj');
+        // setIsLoading(false);
+        const userToken = String(foundUser[0].userToken);
+        const userName = foundUser[0].username;
+
+        try {
+          await AsyncStorage.setItem("userToken", userToken);
+        } catch (e) {
+          console.log(e);
+        }
+        // console.log('user token: ', userToken);
+        dispatch({ type: "LOGIN", id: userName, token: userToken });
+      },
+      signOut: async () => {
+        // setUserToken(null);
+        // setIsLoading(false);
+        try {
+          await AsyncStorage.removeItem("userToken");
+        } catch (e) {
+          console.log(e);
+        }
+        dispatch({ type: "LOGOUT" });
+      },
+      signUp: () => {
+        // setUserToken('fgkj');
+        // setIsLoading(false);
+      },
+      toggleTheme: () => {
+        setIsDarkTheme((isDarkTheme) => !isDarkTheme);
+      },
+    }),
+    []
+  );
+
+  useEffect(() => {
+    setTimeout(async () => {
+      // setIsLoading(false);
+      let userToken;
+      userToken = null;
+      try {
+        userToken = await AsyncStorage.getItem("userToken");
+      } catch (e) {
+        console.log(e);
+      }
+      // console.log('user token: ', userToken);
+      dispatch({ type: "RETRIEVE_TOKEN", token: userToken });
+    }, 1000);
+  }, []);
+
+  if (loginState.isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
-  return <Text>CARGANDO</Text>;
+
+  return (
+    <PaperProvider theme={theme}>
+      <AuthContext.Provider value={authContext}>
+        <NavigationContainer theme={theme}>
+          {loginState.userToken !== null ? (
+            <Drawer.Navigator
+              drawerContent={(props) => <DrawerContent {...props} />}
+            >
+              <Drawer.Screen name="Home" component={MainTabScreen} />
+            </Drawer.Navigator>
+          ) : (
+            <RootStackScreen />
+          )}
+        </NavigationContainer>
+      </AuthContext.Provider>
+    </PaperProvider>
+  );
 }

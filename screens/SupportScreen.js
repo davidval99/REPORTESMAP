@@ -4,8 +4,11 @@ import { View, Text, Button, StyleSheet } from "react-native";
 const SupportScreen = () => {
   return (
     <View style={styles.container}>
-      <Text>Support Screen</Text>
-      <Button title="Click Here" onPress={() => alert("Button Clicked!")} />
+      <Text>Página en proceso</Text>
+      <Button
+        title="Click Here"
+        onPress={() => alert("Estamos en construcción!")}
+      />
     </View>
   );
 };

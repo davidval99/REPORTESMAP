@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { firebase } from "../database/config";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { StatusBar } from "expo-status-bar";
 
@@ -11,9 +12,6 @@ import {
   Platform,
 } from "react-native";
 
-import { firebaseConfig } from "../database/Firebase";
-import * as firebase from "firebase/app"; //npm i firebase@7.9.0
-import "firebase/firestore";
 import { ScrollView } from "react-native-gesture-handler";
 
 const { width, height } = Dimensions.get("window");
@@ -21,7 +19,64 @@ const CARD_HEIGHT = 240;
 const CARD_WIDTH = width * 0.8;
 const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
 
-export default function MarkerFetcher(props) {
+export default function MarkerFetcher() {
+  const [listReports, setListReports] = useState([]);
+
+  useEffect(() => {
+    getReports();
+  }, []);
+
+  const getReports = () => {
+    firebase
+      .firestore()
+      .collection("report")
+      .get()
+      .then((response) => {
+        let list = [];
+        response.forEach((document) => {
+          const id = document.id;
+          const {
+            itemID,
+            Name,
+            OBSERVACION,
+            OLOR,
+            TAMANO,
+            TIPO,
+            ESTADO,
+            Date_Obs,
+            Time_Obs,
+            LocalLatit,
+            LocalLongi,
+            V_Prec_Obs: latitudeDelta,
+            H_Prec_Obs: longitudeDelta,
+          } = document.data();
+
+          if (LocalLatit && LocalLongi && latitudeDelta && longitudeDelta) {
+            list.push({
+              id,
+              itemID,
+              Name,
+              OBSERVACION,
+              OLOR,
+              TAMANO,
+              TIPO,
+              ESTADO,
+              Date_Obs,
+              Time_Obs,
+              LocalLatit,
+              LocalLongi,
+              latitudeDelta,
+              longitudeDelta,
+            });
+          }
+        });
+        setListReports(list);
+      })
+      .catch((err) => {
+        console.log("ERROR");
+      });
+  };
+
   const onMarkerPress = (mapEventData) => {
     const markerID = mapEventData._targetInst.return.key;
 
@@ -35,6 +90,9 @@ export default function MarkerFetcher(props) {
   const _map = React.useRef(null);
   const _scrollView = React.useRef(null);
 
+  if (listReports.length === 0) {
+    return <Text>LOADING....</Text>;
+  }
   return (
     <View
       style={{
@@ -54,7 +112,7 @@ export default function MarkerFetcher(props) {
           longitudeDelta: 0.044982,
         }}
       >
-        {props.listReports.map((report, i) => (
+        {listReports.map((report, i) => (
           <Marker
             coordinate={{
               latitude: parseFloat(report.LocalLatit),

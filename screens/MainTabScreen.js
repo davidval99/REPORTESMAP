@@ -2,10 +2,12 @@ import React from "react";
 
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-
+import Profile from "./Profile";
 import Icon from "react-native-vector-icons/Ionicons";
 
 import SupportScreen from "./SupportScreen";
+import MarkerFetcher from "../components/MarkerFetcher";
+import SettingsScreen from "./SettingsScreen";
 
 const HomeStack = createStackNavigator();
 const DetailsStack = createStackNavigator();
@@ -13,44 +15,33 @@ const DetailsStack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 const MainTabScreen = () => (
-  <Tab.Navigator initialRouteName="Home" activeColor="#fff">
-    <Tab.Screen
-      name="Inicio"
-      component={HomeStackScreen}
-      options={{
-        tabBarLabel: "Inicio",
-        tabBarColor: "#009387",
-        tabBarIcon: ({ color }) => (
-          <Icon name="ios-home" color={color} size={26} />
-        ),
-      }}
-    />
-    <Tab.Screen
-      name="Maps"
-      component={HomeStackScreen}
-      options={{
-        tabBarLabel: "Mapa",
-        tabBarColor: "#1f65ff",
-        tabBarIcon: ({ color }) => <Icon name="map" color={color} size={26} />,
-      }}
-    />
+  <Tab.Navigator initialRouteName="Home">
     <Tab.Screen
       name="Profile"
-      component={SupportScreen}
+      component={ProfileStackScreen}
       options={{
         tabBarLabel: "Profile",
-        tabBarColor: "#694fad",
+        tabBarColor: "#0066b0",
         tabBarIcon: ({ color }) => (
           <Icon name="ios-person" color={color} size={26} />
         ),
       }}
     />
     <Tab.Screen
-      name="Explore"
-      component={HomeStackScreen}
+      name="Mapa"
+      component={MapStackScreen}
+      options={{
+        tabBarLabel: "Mapa",
+        tabBarColor: "#000000",
+        tabBarIcon: ({ color }) => <Icon name="map" color={color} size={26} />,
+      }}
+    />
+    <Tab.Screen
+      name="Settings"
+      component={ConfigurationStackScreen}
       options={{
         tabBarLabel: "Configuración",
-        tabBarColor: "#d02860",
+        tabBarColor: "#0066b0",
         tabBarIcon: ({ color }) => <Icon name="cog" color={color} size={26} />,
       }}
     />
@@ -59,41 +50,11 @@ const MainTabScreen = () => (
 
 export default MainTabScreen;
 
-const HomeStackScreen = ({ navigation }) => (
-  <HomeStack.Navigator
-    screenOptions={{
-      headerStyle: {
-        backgroundColor: "#009387",
-      },
-      headerTintColor: "#fff",
-      headerTitleStyle: {
-        fontWeight: "bold",
-      },
-    }}
-  >
-    <HomeStack.Screen
-      name="Home"
-      component={SupportScreen}
-      options={{
-        title: "Overview",
-        headerLeft: () => (
-          <Icon.Button
-            name="ios-menu"
-            size={25}
-            backgroundColor="#009387"
-            onPress={() => navigation.openDrawer()}
-          ></Icon.Button>
-        ),
-      }}
-    />
-  </HomeStack.Navigator>
-);
-
-const DetailsStackScreen = ({ navigation }) => (
+const ProfileStackScreen = ({ navigation }) => (
   <DetailsStack.Navigator
     screenOptions={{
       headerStyle: {
-        backgroundColor: "#1f65ff",
+        backgroundColor: "#0066b0",
       },
       headerTintColor: "#fff",
       headerTitleStyle: {
@@ -102,14 +63,72 @@ const DetailsStackScreen = ({ navigation }) => (
     }}
   >
     <DetailsStack.Screen
-      name="Details"
+      name="Paisajes Productivos"
+      component={Profile}
+      options={{
+        headerLeft: () => (
+          <Icon.Button
+            name="ios-menu"
+            size={25}
+            backgroundColor="#0066b0"
+            onPress={() => navigation.openDrawer()}
+          ></Icon.Button>
+        ),
+      }}
+    />
+  </DetailsStack.Navigator>
+);
+
+const MapStackScreen = ({ navigation }) => (
+  <DetailsStack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: "#0066b0",
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+        fontWeight: "bold",
+      },
+    }}
+  >
+    <DetailsStack.Screen
+      name="Paisajes Productivos"
+      component={MarkerFetcher}
+      options={{
+        headerLeft: () => (
+          <Icon.Button
+            name="ios-menu"
+            size={25}
+            backgroundColor="#0066b0"
+            onPress={() => navigation.openDrawer()}
+          ></Icon.Button>
+        ),
+      }}
+    />
+  </DetailsStack.Navigator>
+);
+
+const ConfigurationStackScreen = ({ navigation }) => (
+  <DetailsStack.Navigator
+    screenOptions={{
+      headerStyle: {
+        backgroundColor: "#0066b0",
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+        fontWeight: "bold",
+      },
+    }}
+  >
+    <DetailsStack.Screen
+      name="Paisajes Productivos"
       component={SupportScreen}
       options={{
         headerLeft: () => (
           <Icon.Button
             name="ios-menu"
             size={25}
-            backgroundColor="#1f65ff"
+            backgroundColor="#0066b0"
             onPress={() => navigation.openDrawer()}
           ></Icon.Button>
         ),
