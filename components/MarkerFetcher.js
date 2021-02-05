@@ -10,6 +10,7 @@ import {
   Image,
   Dimensions,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 
 import { ScrollView } from "react-native-gesture-handler";
@@ -91,7 +92,11 @@ export default function MarkerFetcher() {
   const _scrollView = React.useRef(null);
 
   if (listReports.length === 0) {
-    return <Text>LOADING....</Text>;
+    return (
+      <View style={[styles.container1, styles.horizontal1]}>
+        <ActivityIndicator size="large" color="#0066b0" />
+      </View>
+    );
   }
   return (
     <View
@@ -155,6 +160,16 @@ export default function MarkerFetcher() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  container1: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  horizonta1: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 10,
   },
   searchBox: {
     position: "absolute",

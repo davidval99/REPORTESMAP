@@ -15,7 +15,10 @@ const DetailsStack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
 const MainTabScreen = () => (
-  <Tab.Navigator initialRouteName="Home">
+  <Tab.Navigator
+    initialRouteName="Mapa"
+    barStyle={{ backgroundColor: "#0066b0" }}
+  >
     <Tab.Screen
       name="Profile"
       component={ProfileStackScreen}
