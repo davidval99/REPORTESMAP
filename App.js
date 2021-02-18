@@ -1,37 +1,27 @@
-import React, { useState, useEffect } from "react";
-import MainTabScreen from "./screens/MainTabScreen";
-import { DrawerContent } from "./screens/DrawerContent";
-
-import { AuthContext } from "./components/context";
-import RootStackScreen from "./screens/RootStackScreen";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, ActivityIndicator, Text } from "react-native";
+import React, { useState, useMemo, useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
 import {
   NavigationContainer,
   DefaultTheme as NavigationDefaultTheme,
   DarkTheme as NavigationDarkTheme,
 } from "@react-navigation/native";
-import { createDrawerNavigator } from "@react-navigation/drawer";
-
 import {
-  Provider as PaperProvider,
   DefaultTheme as PaperDefaultTheme,
   DarkTheme as PaperDarkTheme,
 } from "react-native-paper";
 
-const Drawer = createDrawerNavigator();
+import { createStore, applyMiddleware } from "redux";
+import { Provider } from "react-redux";
+import thunkMiddleware from "redux-thunk";
+import reducer from "./reducers";
+import SwitchNavigator from "./navigation/SwitchNavigator";
+
+import { firebase } from "./database/config";
 
 export default function App() {
-  // const [isLoading, setIsLoading] = React.useState(true);
-  // const [userToken, setUserToken] = React.useState(null);
-
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
-
-  const initialLoginState = {
-    isLoading: true,
-    userName: null,
-    userToken: null,
-  };
+  const middleware = applyMiddleware(thunkMiddleware);
+  const store = createStore(reducer, middleware);
 
   const CustomDefaultTheme = {
     ...NavigationDefaultTheme,
@@ -56,97 +46,23 @@ export default function App() {
   };
 
   const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
-
-  const loginReducer = (prevState, action) => {
-    switch (action.type) {
-      case "RETRIEVE_TOKEN":
-        return {
-          ...prevState,
-          userToken: action.token,
-          isLoading: false,
-        };
-      case "LOGIN":
-        return {
-          ...prevState,
-          userName: action.id,
-          userToken: action.token,
-          isLoading: false,
-        };
-      case "LOGOUT":
-        return {
-          ...prevState,
-          userName: null,
-          userToken: null,
-          isLoading: false,
-        };
-      case "REGISTER":
-        return {
-          ...prevState,
-          userName: action.id,
-          userToken: action.token,
-          isLoading: false,
-        };
-    }
-  };
-
-  const [loginState, dispatch] = React.useReducer(
-    loginReducer,
-    initialLoginState
-  );
-
-  const authContext = React.useMemo(
-    () => ({
-      signIn: async (foundUser) => {
-        // setUserToken('fgkj');
-        // setIsLoading(false);
-        const userToken = String(foundUser[0].userToken);
-        const userName = foundUser[0].username;
-
-        try {
-          await AsyncStorage.setItem("userToken", userToken);
-        } catch (e) {
-          console.log(e);
-        }
-        // console.log('user token: ', userToken);
-        dispatch({ type: "LOGIN", id: userName, token: userToken });
-      },
-      signOut: async () => {
-        // setUserToken(null);
-        // setIsLoading(false);
-        try {
-          await AsyncStorage.removeItem("userToken");
-        } catch (e) {
-          console.log(e);
-        }
-        dispatch({ type: "LOGOUT" });
-      },
-      signUp: () => {
-        // setUserToken('fgkj');
-        // setIsLoading(false);
-      },
-      toggleTheme: () => {
-        setIsDarkTheme((isDarkTheme) => !isDarkTheme);
-      },
-    }),
-    []
-  );
+  const [, setUserLogged] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(async () => {
-      // setIsLoading(false);
-      let userToken;
-      userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem("userToken");
-      } catch (e) {
-        console.log(e);
-      }
-      // console.log('user token: ', userToken);
-      dispatch({ type: "RETRIEVE_TOKEN", token: userToken });
-    }, 1000);
+    firebase.auth().onAuthStateChanged((user) => {
+      setUserLogged(user ? true : false);
+      setIsLoading(false);
+      setUserProfile(user);
+    });
   }, []);
 
-  if (loginState.isLoading) {
+  if (isLoading) {
+    {
+      console.log("cargando");
+    }
+
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -155,20 +71,10 @@ export default function App() {
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <AuthContext.Provider value={authContext}>
-        <NavigationContainer theme={theme}>
-          {loginState.userToken !== null ? (
-            <Drawer.Navigator
-              drawerContent={(props) => <DrawerContent {...props} />}
-            >
-              <Drawer.Screen name="Home" component={MainTabScreen} />
-            </Drawer.Navigator>
-          ) : (
-            <RootStackScreen />
-          )}
-        </NavigationContainer>
-      </AuthContext.Provider>
-    </PaperProvider>
+    <NavigationContainer theme={theme}>
+      <Provider store={store}>
+        <SwitchNavigator />
+      </Provider>
+    </NavigationContainer>
   );
 }

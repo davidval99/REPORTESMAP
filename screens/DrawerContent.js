@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
+
+import { firebase } from "../database/config";
 import { View, StyleSheet } from "react-native";
 import {
   useTheme,
@@ -15,9 +17,13 @@ import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-import { AuthContext } from "../components/context";
+//import { AuthContext } from "../components/context";
 
 export function DrawerContent(props) {
+  const { currentUser } = firebase.auth();
+
+  const { signOutUser } = useContext(AuthContext);
+
   const paperTheme = useTheme();
 
   const { signOut, toggleTheme } = React.useContext(AuthContext);
@@ -35,8 +41,7 @@ export function DrawerContent(props) {
                 size={50}
               />
               <View style={{ marginLeft: 15, flexDirection: "column" }}>
-                <Title style={styles.title}>Juan Mora</Title>
-                <Caption style={styles.caption}>@j_mora</Caption>
+                <Title style={styles.title}>{currentUser.email}</Title>
               </View>
             </View>
           </View>
@@ -101,9 +106,7 @@ export function DrawerContent(props) {
             <Icon name="exit-to-app" color={color} size={size} />
           )}
           label="Salir"
-          onPress={() => {
-            signOut();
-          }}
+          onPress={() => signOutUser()}
         />
       </Drawer.Section>
     </View>

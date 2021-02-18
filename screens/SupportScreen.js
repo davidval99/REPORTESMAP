@@ -5,10 +5,7 @@ const SupportScreen = () => {
   return (
     <View style={styles.container}>
       <Text>Página en proceso</Text>
-      <Button
-        title="Click Here"
-        onPress={() => alert("Estamos en construcción!")}
-      />
+      <Button title="Click Here" onPress={() => alert("Hola!")} />
     </View>
   );
 };
