@@ -12,68 +12,79 @@ import * as Animatable from "react-native-animatable";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useTheme } from "@react-navigation/native";
+import { connect } from "react-redux";
 
-const SplashScreen = ({ navigation }) => {
-  const { colors } = useTheme();
+class SplashScreen extends React.Component {
+  goToLogin = () => {
+    this.props.navigation.navigate("Login");
+  };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#0066b0" barStyle="light-content" />
-      <View style={styles.header}>
-        <Animatable.Image
-          animation="bounceIn"
-          duraton="1500"
-          source={require("../assets/PNUD.png")}
-          style={styles.logo}
-          resizeMode="stretch"
-        />
-      </View>
-      <Animatable.View
-        style={[
-          styles.footer,
-          {
-            backgroundColor: "#404143",
-          },
-        ]}
-        animation="fadeInUpBig"
-      >
-        <Text
+  render() {
+    return (
+      <View style={styles.container}>
+        <StatusBar backgroundColor="#0066b0" barStyle="light-content" />
+        <View style={styles.header}>
+          <Animatable.Image
+            animation="bounceIn"
+            duraton="1500"
+            source={require("../assets/PNUD.png")}
+            style={styles.logo}
+            resizeMode="stretch"
+          />
+        </View>
+        <Animatable.View
           style={[
-            styles.title,
+            styles.footer,
             {
-              color: "#ffff",
+              backgroundColor: "#404143",
             },
           ]}
+          animation="fadeInUpBig"
         >
-          Conservando la biodiversidad de Costa Rica
-        </Text>
-        <View style={styles.button}>
-          <TouchableOpacity
+          <Text
             style={[
-              styles.signIn,
+              styles.title,
               {
-                borderColor: "#0066b0", //boton
-                borderWidth: 1,
-                marginTop: 15,
+                color: "#ffff",
               },
             ]}
-            onPress={() => navigation.navigate("SignInScreen")}
           >
-            <Text
+            Conservando la biodiversidad de Costa Rica
+          </Text>
+          <View style={styles.button}>
+            <TouchableOpacity
               style={[
-                styles.textSign,
+                styles.signIn,
                 {
-                  color: "#FFFF",
+                  borderColor: "#0066b0", //boton
+                  borderWidth: 1,
+                  marginTop: 15,
                 },
               ]}
+              onPress={() => this.props.navigation.navigate("Login")}
             >
-              Iniciar
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Animatable.View>
-    </View>
-  );
+              <Text
+                style={[
+                  styles.textSign,
+                  {
+                    color: "#FFFF",
+                  },
+                ]}
+              >
+                Iniciar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Animatable.View>
+      </View>
+    );
+  }
+}
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+  };
 };
 
 export default SplashScreen;
