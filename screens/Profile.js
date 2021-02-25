@@ -12,7 +12,6 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { connect } from "react-redux";
 
 class Profile extends React.Component {
-  log;
   handleSignout = () => {
     firebase.auth().signOut();
     this.props.route.params.rootNavigation.navigate("Splash");
@@ -43,7 +42,6 @@ class Profile extends React.Component {
                 >
                   David Valverde
                 </Title>
-                <Caption style={styles.caption}>@j_mora</Caption>
               </View>
             </View>
           </View>
@@ -52,7 +50,7 @@ class Profile extends React.Component {
             <View style={styles.row}>
               <Icon name="map-marker-radius" color="#777777" size={20} />
               <Text style={{ color: "#777777", marginLeft: 20 }}>
-                Cartago, Costa Rica
+                Alajuela, Costa Rica
               </Text>
             </View>
             <View style={styles.row}>

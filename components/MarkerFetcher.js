@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { firebase } from "../database/config";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import { StatusBar } from "expo-status-bar";
@@ -9,23 +9,52 @@ import {
   View,
   Image,
   Dimensions,
-  Platform,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 
-import { ScrollView } from "react-native-gesture-handler";
-
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = 240;
-const CARD_WIDTH = width * 0.8;
-const SPACING_FOR_CARD_INSET = width * 0.1 - 10;
+const CARD_HEIGHT = 200;
+const CARD_WIDTH = width * 0.98;
+const imageHeight = 300;
 
-export default function MarkerFetcher() {
+export default function MarkerFetcher({ params }) {
+  const initialMapState = {
+    Date_Obs: "Selecciona un marcador",
+    ESTADO: "Selecciona un marcador",
+    LocalLatit: "9.93066400000",
+    LocalLongi: "-84.02592500000",
+    Name: "",
+    OBSERVACION: "Selecciona un marcador",
+    OLOR: "Selecciona un marcador",
+    TAMANO: "Selecciona un marcador",
+    TIPO: "Selecciona un marcador",
+    Time_Obs: "Selecciona un marcador",
+    id: -1,
+    itemID: "",
+    latitudeDelta: "0.04865200000",
+    longitudeDelta: "0.03012500000",
+  };
+
   const [listReports, setListReports] = useState([]);
+  const [currentMarker, setCurrentMarker] = useState(initialMapState);
+  const [loading, setLoading] = useState(true);
+  const _onLoadEnd = () => {
+    setLoading(false);
+  };
 
   useEffect(() => {
     getReports();
   }, []);
+
+  const changeMarkerCenter = () => {
+    mapRef.current.animateToRegion({
+      latitude: parseFloat(currentMarker.LocalLatit),
+      longitude: parseFloat(currentMarker.LocalLongi),
+      latitudeDelta: parseFloat(currentMarker.latitudeDelta),
+      longitudeDelta: parseFloat(currentMarker.longitudeDelta),
+    });
+  };
 
   const getReports = () => {
     firebase
@@ -34,6 +63,7 @@ export default function MarkerFetcher() {
       .get()
       .then((response) => {
         let list = [];
+        let imageList = [];
         response.forEach((document) => {
           const id = document.id;
           const {
@@ -48,6 +78,7 @@ export default function MarkerFetcher() {
             Time_Obs,
             LocalLatit,
             LocalLongi,
+            image,
             V_Prec_Obs: latitudeDelta,
             H_Prec_Obs: longitudeDelta,
           } = document.data();
@@ -68,6 +99,7 @@ export default function MarkerFetcher() {
               LocalLongi,
               latitudeDelta,
               longitudeDelta,
+              image,
             });
           }
         });
@@ -78,19 +110,6 @@ export default function MarkerFetcher() {
       });
   };
 
-  const onMarkerPress = (mapEventData) => {
-    const markerID = mapEventData._targetInst.return.key;
-
-    let x = markerID * CARD_WIDTH + markerID * 20;
-    if (Platform.OS === "ios") {
-      x = x - SPACING_FOR_CARD_INSET;
-    }
-
-    _scrollView.current.scrollTo({ x: x, y: 0, animated: true });
-  };
-  const _map = React.useRef(null);
-  const _scrollView = React.useRef(null);
-
   if (listReports.length === 0) {
     return (
       <View style={[styles.container1, styles.horizontal1]}>
@@ -98,6 +117,7 @@ export default function MarkerFetcher() {
       </View>
     );
   }
+
   return (
     <View
       style={{
@@ -111,10 +131,10 @@ export default function MarkerFetcher() {
         style={StyleSheet.absoluteFillObject}
         provider={MapView.PROVIDER_GOOGLE}
         region={{
-          latitude: 9.917415,
-          longitude: -84.034018,
-          latitudeDelta: 0.05953,
-          longitudeDelta: 0.044982,
+          latitude: parseFloat(currentMarker.LocalLatit),
+          longitude: parseFloat(currentMarker.LocalLongi),
+          latitudeDelta: parseFloat(currentMarker.latitudeDelta),
+          longitudeDelta: parseFloat(currentMarker.longitudeDelta),
         }}
       >
         {listReports.map((report, i) => (
@@ -125,89 +145,122 @@ export default function MarkerFetcher() {
               latitudeDelta: parseFloat(report.latitudeDelta),
               longitudeDelta: parseFloat(report.longitudeDelta),
             }}
+            onPress={() => setCurrentMarker(report)}
             key={report.itemID}
           >
-            <Callout tooltip>
-              <View style={styles.card}>
-                <Image />
-                <View style={styles.textContent}>
-                  <Text numberOfLines={5} style={styles.cardDescription}>
-                    {"Observación reportada: " + report.OBSERVACION}
-                  </Text>
-                  <Text numberOfLines={5} style={styles.cardDescription}>
-                    {"Descripción: " + report.OBSERVACION}
-                  </Text>
-                  <Text numberOfLines={1} style={styles.cardDescription}>
-                    {"Presenta olor: " + report.OLOR}
-                  </Text>
-                  <Text numberOfLines={2} style={styles.cardDescription}>
-                    {"Clasificación del agua : " + report.TIPO}
-                  </Text>
-                  <Text numberOfLines={1} style={styles.date}>
-                    {"Fecha de reporte: " + report.Date_Obs}
-                  </Text>
-                </View>
-              </View>
-            </Callout>
+            <Callout tooltip></Callout>
           </Marker>
         ))}
       </MapView>
       <StatusBar style="auto" />
+
+      <View style={styles.scrollView}>
+        {currentMarker.id == -1 ? (
+          <View></View>
+        ) : (
+          <View style={styles.card}>
+            <View style={styles.textContent}>
+              <Text style={styles.title}>
+                {"Detalles del reporte #" + currentMarker.itemID + ":"}
+              </Text>
+              <ScrollView>
+                <View style={styles.item}>
+                  {currentMarker.image == undefined ? (
+                    <Text style={styles.cardDescription}>
+                      {"No hay imágenes asociadas a este reporte."}
+                    </Text>
+                  ) : (
+                    <View>
+                      <Image
+                        onLoadEnd={_onLoadEnd}
+                        source={{
+                          uri: currentMarker.image[0],
+                        }}
+                        style={{ height: 300, width: 300 }}
+                        resizeMode="cover"
+                      />
+                      <ActivityIndicator
+                        size="large"
+                        color="#0066b0"
+                        animating={loading}
+                      />
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.item}>
+                  <Text style={styles.cardDescription}>
+                    {"Observación reportada : " + currentMarker.OBSERVACION}
+                  </Text>
+                </View>
+                <View style={styles.item}>
+                  <Text style={styles.cardDescription}>
+                    {"Estado: " + currentMarker.ESTADO}
+                  </Text>
+                </View>
+                <View style={styles.item}>
+                  <Text style={styles.cardDescription}>
+                    {"Presenta olor: " + currentMarker.OLOR}
+                  </Text>
+                </View>
+                <View style={styles.item}>
+                  <Text style={styles.cardDescription}>
+                    {"Clasificación del agua : " + currentMarker.TIPO}
+                  </Text>
+                </View>
+
+                <View style={styles.item}>
+                  <Text style={styles.cardDescription}>
+                    {"Fecha de reporte: " + currentMarker.Date_Obs}
+                  </Text>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-
   container1: {
     flex: 1,
     justifyContent: "center",
   },
+  title: {
+    fontSize: 20,
+  },
+  activityIndicator: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  item: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 30,
+    margin: 2,
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  name: {
+    color: "#fff",
+    fontSize: 20,
+  },
+
   horizonta1: {
     flexDirection: "row",
     justifyContent: "space-around",
     padding: 10,
   },
-  searchBox: {
-    position: "absolute",
-    marginTop: Platform.OS === "ios" ? 40 : 20,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    width: "90%",
-    alignSelf: "center",
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#ccc",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 10,
-  },
-  chipsScrollView: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 90 : 80,
-    paddingHorizontal: 10,
-  },
-  chipsIcon: {
-    marginRight: 5,
-  },
-  chipsItem: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 8,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
-    height: 35,
-    shadowColor: "#ccc",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 10,
-  },
+
   scrollView: {
     position: "absolute",
     bottom: 0,
@@ -219,11 +272,13 @@ const styles = StyleSheet.create({
     paddingRight: width - CARD_WIDTH,
   },
   card: {
-    // padding: 10,
+    alignSelf: "center",
     elevation: 2,
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
+    backgroundColor: "#0066B0",
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     marginHorizontal: 10,
     shadowColor: "#000",
     shadowRadius: 5,
@@ -249,8 +304,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   cardDescription: {
-    marginTop: 5,
-    fontSize: 12,
+    marginTop: 1,
+    fontSize: 15,
     color: "#000000",
   },
   date: {
