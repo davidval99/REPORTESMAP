@@ -34,6 +34,7 @@ class MainTabScreen extends React.Component {
         />
         <Tab.Screen
           name="Mapa"
+          initialParams={this.props.screenProps}
           component={MapStackScreen}
           options={{
             tabBarLabel: "Mapa",
@@ -74,7 +75,7 @@ const ProfileStackScreen = () => (
     }}
   >
     <DetailsStack.Screen
-      name="Paisajes Productivos"
+      name="CBIMA"
       initialParams={this.props.screenProps}
       component={Profile}
       options={{
@@ -104,7 +105,7 @@ const MapStackScreen = ({ navigation }) => (
     }}
   >
     <DetailsStack.Screen
-      name="Paisajes Productivos"
+      name="CBIMA"
       component={MarkerFetcher}
       /*options={{
         headerLeft: () => (
@@ -133,7 +134,7 @@ const ConfigurationStackScreen = ({ navigation }) => (
     }}
   >
     <DetailsStack.Screen
-      name="Paisajes Productivos"
+      name="CBIMA"
       component={SupportScreen}
       /*options={{
         headerLeft: () => (
