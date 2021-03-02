@@ -11,6 +11,7 @@ import {
   Dimensions,
   ActivityIndicator,
   ScrollView,
+  Animated,
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -35,7 +36,8 @@ export default function MarkerFetcher({ params }) {
     latitudeDelta: "0.04865200000",
     longitudeDelta: "0.03012500000",
   };
-
+  const _map = React.useRef(null);
+  const _scrollView = React.useRef(null);
   const [listReports, setListReports] = useState([]);
   const [currentMarker, setCurrentMarker] = useState(initialMapState);
   const [loading, setLoading] = useState(true);
@@ -43,18 +45,38 @@ export default function MarkerFetcher({ params }) {
     setLoading(false);
   };
 
+  let mapIndex = 0;
+  let mapAnimation = new Animated.Value(0);
+
   useEffect(() => {
     getReports();
-  }, []);
+    mapAnimation.addListener(({ value }) => {
+      let index = Math.floor(value / CARD_WIDTH + 0.3); // animate 30% away from landing on the next item
+      if (index >= listReports.length) {
+        index = listReports.length - 1;
+      }
+      if (index <= 0) {
+        index = 0;
+      }
 
-  const changeMarkerCenter = () => {
-    mapRef.current.animateToRegion({
-      latitude: parseFloat(currentMarker.LocalLatit),
-      longitude: parseFloat(currentMarker.LocalLongi),
-      latitudeDelta: parseFloat(currentMarker.latitudeDelta),
-      longitudeDelta: parseFloat(currentMarker.longitudeDelta),
+      clearTimeout(regionTimeout);
+
+      const regionTimeout = setTimeout(() => {
+        if (mapIndex !== index) {
+          mapIndex = index;
+          const { coordinate } = listReports[index];
+          _map.current.animateToRegion(
+            {
+              ...coordinate,
+              latitudeDelta: parseFloat(initialMapState.latitudeDelta),
+              longitudeDelta: parseFloat(initialMapState.longitudeDelta),
+            },
+            350
+          );
+        }
+      }, 10);
     });
-  };
+  }, []);
 
   const getReports = () => {
     firebase
@@ -118,6 +140,22 @@ export default function MarkerFetcher({ params }) {
     );
   }
 
+  const interpolations = listReports.map((marker, index) => {
+    const inputRange = [
+      (index - 1) * CARD_WIDTH,
+      index * CARD_WIDTH,
+      (index + 1) * CARD_WIDTH,
+    ];
+
+    const scale = mapAnimation.interpolate({
+      inputRange,
+      outputRange: [1, 5, 1],
+      extrapolate: "clamp",
+    });
+
+    return { scale };
+  });
+
   return (
     <View
       style={{
@@ -128,29 +166,40 @@ export default function MarkerFetcher({ params }) {
       }}
     >
       <MapView
+        ref={_map}
         style={StyleSheet.absoluteFillObject}
         provider={MapView.PROVIDER_GOOGLE}
-        region={{
-          latitude: parseFloat(currentMarker.LocalLatit),
-          longitude: parseFloat(currentMarker.LocalLongi),
-          latitudeDelta: parseFloat(currentMarker.latitudeDelta),
-          longitudeDelta: parseFloat(currentMarker.longitudeDelta),
+        initialRegion={{
+          latitude: parseFloat(initialMapState.LocalLatit),
+          longitude: parseFloat(initialMapState.LocalLongi),
+          latitudeDelta: parseFloat(initialMapState.latitudeDelta),
+          longitudeDelta: parseFloat(initialMapState.longitudeDelta),
         }}
       >
-        {listReports.map((report, i) => (
-          <Marker
-            coordinate={{
-              latitude: parseFloat(report.LocalLatit),
-              longitude: parseFloat(report.LocalLongi),
-              latitudeDelta: parseFloat(report.latitudeDelta),
-              longitudeDelta: parseFloat(report.longitudeDelta),
-            }}
-            onPress={() => setCurrentMarker(report)}
-            key={report.itemID}
-          >
-            <Callout tooltip></Callout>
-          </Marker>
-        ))}
+        {listReports.map((report, i) => {
+          const scaleStyle = {
+            transform: [
+              {
+                scale: interpolations[i].scale,
+              },
+            ],
+          };
+          return (
+            <Marker
+              ref={_map}
+              coordinate={{
+                latitude: parseFloat(report.LocalLatit),
+                longitude: parseFloat(report.LocalLongi),
+                latitudeDelta: parseFloat(report.latitudeDelta),
+                longitudeDelta: parseFloat(report.longitudeDelta),
+              }}
+              onPress={() => setCurrentMarker(report)}
+              key={report.itemID}
+            >
+              <Callout tooltip></Callout>
+            </Marker>
+          );
+        })}
       </MapView>
       <StatusBar style="auto" />
 
