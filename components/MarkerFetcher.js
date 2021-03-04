@@ -12,12 +12,15 @@ import {
   ActivityIndicator,
   ScrollView,
   Animated,
+  Modal,
+  Button,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
+import { TouchableRipple } from "react-native-paper";
 const { width, height } = Dimensions.get("window");
-const CARD_HEIGHT = 200;
+const CARD_HEIGHT = height - 200;
 const CARD_WIDTH = width * 0.98;
-const imageHeight = 300;
 
 export default function MarkerFetcher({ params }) {
   const initialMapState = {
@@ -37,12 +40,22 @@ export default function MarkerFetcher({ params }) {
     longitudeDelta: "0.03012500000",
   };
   const _map = React.useRef(null);
-  const _scrollView = React.useRef(null);
+
   const [listReports, setListReports] = useState([]);
   const [currentMarker, setCurrentMarker] = useState(initialMapState);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(true);
+  const [region, setRegion] = useState(initialMapState);
+
   const _onLoadEnd = () => {
     setLoading(false);
+  };
+
+  const onChangeValue = (region) => {
+    //
+    //alert(JSON.stringify(region));
+    //console.log(region);
+    setRegion(region);
   };
 
   let mapIndex = 0;
@@ -175,6 +188,7 @@ export default function MarkerFetcher({ params }) {
           latitudeDelta: parseFloat(initialMapState.latitudeDelta),
           longitudeDelta: parseFloat(initialMapState.longitudeDelta),
         }}
+        onRegionChangeComplete={onChangeValue}
       >
         {listReports.map((report, i) => {
           const scaleStyle = {
@@ -193,7 +207,10 @@ export default function MarkerFetcher({ params }) {
                 latitudeDelta: parseFloat(report.latitudeDelta),
                 longitudeDelta: parseFloat(report.longitudeDelta),
               }}
-              onPress={() => setCurrentMarker(report)}
+              onPress={() => {
+                setCurrentMarker(report);
+                setModalVisible(true);
+              }}
               key={report.itemID}
             >
               <Callout tooltip></Callout>
@@ -201,73 +218,122 @@ export default function MarkerFetcher({ params }) {
           );
         })}
       </MapView>
-      <StatusBar style="auto" />
 
-      <View style={styles.scrollView}>
-        {currentMarker.id == -1 ? (
-          <View></View>
-        ) : (
-          <View style={styles.card}>
-            <View style={styles.textContent}>
-              <Text style={styles.title}>
-                {"Detalles del reporte #" + currentMarker.itemID + ":"}
-              </Text>
-              <ScrollView>
-                <View style={styles.item}>
-                  {currentMarker.image == undefined ? (
-                    <Text style={styles.cardDescription}>
-                      {"No hay imágenes asociadas a este reporte."}
-                    </Text>
-                  ) : (
-                    <View>
-                      <Image
-                        onLoadEnd={_onLoadEnd}
-                        source={{
-                          uri: currentMarker.image[0],
-                        }}
-                        style={{ height: 300, width: 300 }}
-                        resizeMode="cover"
-                      />
-                      <ActivityIndicator
-                        size="large"
-                        color="#0066b0"
-                        animating={loading}
-                      />
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.item}>
-                  <Text style={styles.cardDescription}>
-                    {"Observación reportada : " + currentMarker.OBSERVACION}
-                  </Text>
-                </View>
-                <View style={styles.item}>
-                  <Text style={styles.cardDescription}>
-                    {"Estado: " + currentMarker.ESTADO}
-                  </Text>
-                </View>
-                <View style={styles.item}>
-                  <Text style={styles.cardDescription}>
-                    {"Presenta olor: " + currentMarker.OLOR}
-                  </Text>
-                </View>
-                <View style={styles.item}>
-                  <Text style={styles.cardDescription}>
-                    {"Clasificación del agua : " + currentMarker.TIPO}
-                  </Text>
-                </View>
-
-                <View style={styles.item}>
-                  <Text style={styles.cardDescription}>
-                    {"Fecha de reporte: " + currentMarker.Date_Obs}
-                  </Text>
-                </View>
-              </ScrollView>
-            </View>
+      <View
+        style={{
+          top: "10%",
+          left: "90%",
+          marginLeft: -24,
+          marginTop: -48,
+          position: "absolute",
+        }}
+      >
+        <TouchableRipple
+          style={styles.roundButton1}
+          onPress={() => console.log(region)}
+        >
+          <View>
+            <Icon name="map-marker-plus-outline" color="#FFFFFF" size={30} />
           </View>
-        )}
+        </TouchableRipple>
       </View>
+
+      <View
+        style={{
+          top: "50%",
+          left: "50%",
+          marginLeft: -24,
+          marginTop: -48,
+          position: "absolute",
+        }}
+      >
+        <Image
+          style={{ height: 48, width: 48 }}
+          source={require("../assets/marker.png")}
+        />
+      </View>
+
+      <StatusBar style="auto" />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.card}>
+          <View style={styles.textContent}>
+            <Text style={styles.buttonContainer}>
+              <TouchableRipple
+                style={styles.roundButton1}
+                onPress={() => setModalVisible(false)}
+              >
+                <View>
+                  <Icon name="close" color="#FFFFFF" size={30} />
+                </View>
+              </TouchableRipple>
+            </Text>
+
+            <Text style={styles.title}>
+              {"Detalles del reporte # " + currentMarker.itemID + " :"}
+            </Text>
+
+            <ScrollView>
+              <View style={styles.item}>
+                {currentMarker.image == undefined ? (
+                  <Text style={styles.cardDescription}>
+                    {"No hay imágenes asociadas a este reporte."}
+                  </Text>
+                ) : (
+                  <View>
+                    <Image
+                      onLoadEnd={_onLoadEnd}
+                      source={{
+                        uri: currentMarker.image[0],
+                      }}
+                      style={{ height: 300, width: 300 }}
+                      resizeMode="cover"
+                    />
+                    <ActivityIndicator
+                      size="large"
+                      color="#0066b0"
+                      animating={loading}
+                    />
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Observación reportada : " + currentMarker.OBSERVACION}
+                </Text>
+              </View>
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Estado: " + currentMarker.ESTADO}
+                </Text>
+              </View>
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Presenta olor: " + currentMarker.OLOR}
+                </Text>
+              </View>
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Clasificación del agua : " + currentMarker.TIPO}
+                </Text>
+              </View>
+
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Fecha de reporte: " + currentMarker.Date_Obs}
+                </Text>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -280,6 +346,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
   },
+  buttonContainer: {
+    left: "90%",
+  },
   activityIndicator: {
     position: "absolute",
     left: 0,
@@ -287,6 +356,20 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
   },
+  modal: {
+    position: "absolute",
+  },
+
+  roundButton1: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 1,
+    borderRadius: 100,
+    backgroundColor: "#0066B0",
+  },
+
   item: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -299,15 +382,10 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
   },
-  name: {
-    color: "#fff",
-    fontSize: 20,
-  },
 
-  horizonta1: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 10,
+  centeredView: {
+    flex: 1,
+    margin: 20,
   },
 
   scrollView: {
@@ -317,10 +395,10 @@ const styles = StyleSheet.create({
     right: 0,
     paddingVertical: 10,
   },
-  endPadding: {
-    paddingRight: width - CARD_WIDTH,
-  },
+
   card: {
+    position: "relative",
+    top: "20%",
     alignSelf: "center",
     elevation: 2,
     backgroundColor: "#0066B0",
@@ -337,12 +415,7 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     overflow: "hidden",
   },
-  cardImage: {
-    flex: 3,
-    width: "100%",
-    height: "100%",
-    alignSelf: "center",
-  },
+
   textContent: {
     flex: 2,
     padding: 10,
@@ -357,34 +430,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#000000",
   },
-  date: {
-    marginTop: 5,
-    fontSize: 12,
-    textAlign: "left",
-  },
-  markerWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: 50,
-    height: 50,
-  },
+
   marker: {
     width: 30,
     height: 30,
-  },
-  button: {
-    alignItems: "center",
-    marginTop: 5,
-  },
-  signIn: {
-    width: "100%",
-    padding: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 3,
-  },
-  textSign: {
-    fontSize: 14,
-    fontWeight: "bold",
   },
 });
