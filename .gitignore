@@ -9,6 +9,7 @@ npm-debug.*
 *.orig.*
 web-build/
 .history/
+.history/components
 
 # macOS
 .DS_Store
