@@ -7,7 +7,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import SupportScreen from "./SupportScreen";
 import MarkerFetcher from "../components/MarkerFetcher";
-import SettingsScreen from "./SettingsScreen";
 
 const DetailsStack = createStackNavigator();
 
@@ -23,7 +22,7 @@ class MainTabScreen extends React.Component {
         <Tab.Screen
           name="Profile"
           component={Profile}
-          initialParams={this.props.screenProps}
+          initialParams={this.props}
           options={{
             tabBarLabel: "Profile",
             tabBarColor: "#0066b0",
@@ -34,8 +33,8 @@ class MainTabScreen extends React.Component {
         />
         <Tab.Screen
           name="Mapa"
-          initialParams={this.props.screenProps}
-          component={MapStackScreen}
+          component={MarkerFetcher}
+          initialParams={this.props}
           options={{
             tabBarLabel: "Mapa",
             tabBarColor: "#000000",

@@ -27,7 +27,7 @@ class SplashScreen extends React.Component {
           <Animatable.Image
             animation="bounceIn"
             duraton="1500"
-            source={require("../assets/PNUD.png")}
+            source={require("../assets/cbimaLogo.png")}
             style={styles.logo}
             resizeMode="stretch"
           />
@@ -49,7 +49,7 @@ class SplashScreen extends React.Component {
               },
             ]}
           >
-            Conservando la biodiversidad de Costa Rica
+            Trabajando en el rescate de la microcuenca del río María Aguilar.
           </Text>
           <View style={styles.button}>
             <TouchableOpacity

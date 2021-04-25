@@ -13,7 +13,6 @@ import { connect } from "react-redux";
 import { updateEmail, updatePassword, login, getUser } from "../actions/users";
 import { firebase } from "../database/config";
 import { createStackNavigator } from "@react-navigation/stack";
-import { DrawerContent } from "./DrawerContent";
 import * as Animatable from "react-native-animatable";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Feather from "react-native-vector-icons/Feather";
@@ -70,7 +69,10 @@ class Login extends React.Component {
       if (user) {
         this.props.getUser(user.uid);
         if (this.props.user != null) {
-          this.props.navigation.navigate("MainTabScreen");
+          this.props.navigation.navigate("MainTabScreen", {
+            user: user.email,
+            userUID: user.uid,
+          });
         }
       }
     });
@@ -160,7 +162,7 @@ class Login extends React.Component {
 
           <TouchableOpacity>
             <Text style={{ color: "#0066b0", marginTop: 15 }}>
-              Olvidaste la contraseña?
+              ¿Olvidaste la contraseña?
             </Text>
           </TouchableOpacity>
           <View style={styles.button}>

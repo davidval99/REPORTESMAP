@@ -4,7 +4,9 @@ import { firebase, db } from "../database/config";
 
 export const UPDATE_EMAIL = "UPDATE_EMAIL";
 export const UPDATE_NAME = "UPDATE_NAME";
+
 export const UPDATE_PASSWORD = "UPDATE_PASSWORD";
+
 export const LOGIN = "LOGIN";
 export const SIGNUP = "SIGNUP";
 
@@ -18,6 +20,13 @@ export const updateEmail = (email) => {
 };
 
 export const updateName = (name) => {
+  return {
+    type: UPDATE_NAME,
+    payload: name,
+  };
+};
+
+export const updateLastName = (lastname) => {
   return {
     type: UPDATE_NAME,
     payload: name,
@@ -51,7 +60,7 @@ export const getUser = (uid) => {
     try {
       const user = await db.collection("users").doc(uid).get();
 
-      dispatch({ type: LOGIN, payload: user.data() });
+      return { type: LOGIN, payload: user.data() };
     } catch (e) {
       alert(e);
     }
@@ -61,7 +70,7 @@ export const getUser = (uid) => {
 export const signup = () => {
   return async (dispatch, getState) => {
     try {
-      const { email, password, name } = getState().user;
+      const { email, password } = getState().user;
       const response = await firebase
         .auth()
         .createUserWithEmailAndPassword(email, password);
@@ -69,11 +78,9 @@ export const signup = () => {
         const user = {
           uid: response.user.uid,
           email: email,
-          name: "Mario",
         };
 
         db.collection("users").doc(response.user.uid).set(user);
-        alert("Su usuario se creó exitosamente");
 
         dispatch({ type: SIGNUP, payload: user });
       }

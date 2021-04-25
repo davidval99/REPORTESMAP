@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ReportesMap",
-    "slug": "ReportesMap",
+    "name": "Desfogues Costa Rica ",
+    "slug": "reportescr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,6 +27,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "Esta aplicación permite a los usuarios realizar reportes acerca de desfogues y botaderos a los ríos. Estos reportes serán revisados por las autoridades municipales y de salud correspondientes con el fin de limpiarlos."
   }
 }

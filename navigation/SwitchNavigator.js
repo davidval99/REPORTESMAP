@@ -5,6 +5,7 @@ import SignUp from "../screens/SignUp";
 import MainTabScreen from "../screens/MainTabScreen";
 import Login from "../screens/Login";
 import Profile from "../screens/Profile";
+import AddMarker from "../screens/AddMarker";
 
 const SwitchNavigator = createSwitchNavigator(
   {
@@ -21,6 +22,10 @@ const SwitchNavigator = createSwitchNavigator(
 
     Profile: {
       screen: Profile,
+    },
+
+    AddMarker: {
+      screen: AddMarker,
     },
     MainTabScreen: {
       screen: ({ navigation }) => (

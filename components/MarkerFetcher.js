@@ -14,6 +14,7 @@ import {
   Animated,
   Modal,
   Button,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -22,20 +23,16 @@ const { width, height } = Dimensions.get("window");
 const CARD_HEIGHT = height - 200;
 const CARD_WIDTH = width * 0.98;
 
-export default function MarkerFetcher({ params }) {
+export default function MarkerFetcher(props) {
   const initialMapState = {
     Date_Obs: "Selecciona un marcador",
-    ESTADO: "Selecciona un marcador",
     LocalLatit: "9.93066400000",
     LocalLongi: "-84.02592500000",
-    Name: "",
     OBSERVACION: "Selecciona un marcador",
     OLOR: "Selecciona un marcador",
-    TAMANO: "Selecciona un marcador",
     TIPO: "Selecciona un marcador",
     Time_Obs: "Selecciona un marcador",
     id: -1,
-    itemID: "",
     latitudeDelta: "0.04865200000",
     longitudeDelta: "0.03012500000",
   };
@@ -44,7 +41,7 @@ export default function MarkerFetcher({ params }) {
   const [listReports, setListReports] = useState([]);
   const [currentMarker, setCurrentMarker] = useState(initialMapState);
   const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
   const [region, setRegion] = useState(initialMapState);
 
   const _onLoadEnd = () => {
@@ -52,9 +49,6 @@ export default function MarkerFetcher({ params }) {
   };
 
   const onChangeValue = (region) => {
-    //
-    //alert(JSON.stringify(region));
-    //console.log(region);
     setRegion(region);
   };
 
@@ -102,18 +96,15 @@ export default function MarkerFetcher({ params }) {
         response.forEach((document) => {
           const id = document.id;
           const {
-            itemID,
-            Name,
             OBSERVACION,
             OLOR,
-            TAMANO,
             TIPO,
-            ESTADO,
             Date_Obs,
             Time_Obs,
             LocalLatit,
             LocalLongi,
             image,
+            tipos,
             V_Prec_Obs: latitudeDelta,
             H_Prec_Obs: longitudeDelta,
           } = document.data();
@@ -121,13 +112,9 @@ export default function MarkerFetcher({ params }) {
           if (LocalLatit && LocalLongi && latitudeDelta && longitudeDelta) {
             list.push({
               id,
-              itemID,
-              Name,
               OBSERVACION,
               OLOR,
-              TAMANO,
               TIPO,
-              ESTADO,
               Date_Obs,
               Time_Obs,
               LocalLatit,
@@ -135,6 +122,7 @@ export default function MarkerFetcher({ params }) {
               latitudeDelta,
               longitudeDelta,
               image,
+              tipos,
             });
           }
         });
@@ -211,7 +199,7 @@ export default function MarkerFetcher({ params }) {
                 setCurrentMarker(report);
                 setModalVisible(true);
               }}
-              key={report.itemID}
+              key={report.id}
             >
               <Callout tooltip></Callout>
             </Marker>
@@ -221,7 +209,7 @@ export default function MarkerFetcher({ params }) {
 
       <View
         style={{
-          top: "10%",
+          top: "15%",
           left: "90%",
           marginLeft: -24,
           marginTop: -48,
@@ -230,7 +218,32 @@ export default function MarkerFetcher({ params }) {
       >
         <TouchableRipple
           style={styles.roundButton1}
-          onPress={() => console.log(region)}
+          onPress={() =>
+            Alert.alert(
+              "¿Agregar un reporte en esta ubicación?",
+              "",
+              [
+                {
+                  text: "Cancelar",
+                  style: "cancel",
+                },
+                {
+                  text: "Confirmar",
+                  onPress: () =>
+                    props.route.params.screenProps.rootNavigation.navigate(
+                      "AddMarker",
+                      {
+                        region,
+                        user:
+                          props.route.params.screenProps.rootNavigation.state
+                            .params.userUID,
+                      }
+                    ),
+                },
+              ],
+              { cancelable: false }
+            )
+          }
         >
           <View>
             <Icon name="map-marker-plus-outline" color="#FFFFFF" size={30} />
@@ -276,7 +289,7 @@ export default function MarkerFetcher({ params }) {
             </Text>
 
             <Text style={styles.title}>
-              {"Detalles del reporte # " + currentMarker.itemID + " :"}
+              {"Detalles del reporte # " + currentMarker.id + " :"}
             </Text>
 
             <ScrollView>
@@ -309,25 +322,36 @@ export default function MarkerFetcher({ params }) {
                   {"Observación reportada : " + currentMarker.OBSERVACION}
                 </Text>
               </View>
-              <View style={styles.item}>
-                <Text style={styles.cardDescription}>
-                  {"Estado: " + currentMarker.ESTADO}
-                </Text>
-              </View>
+
               <View style={styles.item}>
                 <Text style={styles.cardDescription}>
                   {"Presenta olor: " + currentMarker.OLOR}
                 </Text>
               </View>
               <View style={styles.item}>
-                <Text style={styles.cardDescription}>
-                  {"Clasificación del agua : " + currentMarker.TIPO}
-                </Text>
+                {currentMarker.tipos == undefined ? (
+                  <Text style={styles.cardDescription}>
+                    {"No hay tipo definido para este reporte."}
+                  </Text>
+                ) : (
+                  <View>
+                    <Text style={styles.cardDescription}>
+                      {"Observación reportada : " +
+                        currentMarker.tipos.toString()}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               <View style={styles.item}>
                 <Text style={styles.cardDescription}>
                   {"Fecha de reporte: " + currentMarker.Date_Obs}
+                </Text>
+              </View>
+
+              <View style={styles.item}>
+                <Text style={styles.cardDescription}>
+                  {"Hora de reporte: " + currentMarker.Time_Obs}
                 </Text>
               </View>
             </ScrollView>
@@ -361,8 +385,8 @@ const styles = StyleSheet.create({
   },
 
   roundButton1: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
     padding: 1,

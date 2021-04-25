@@ -59,10 +59,6 @@ export default function App() {
   }, []);
 
   if (isLoading) {
-    {
-      console.log("cargando");
-    }
-
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />

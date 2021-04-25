@@ -55,8 +55,6 @@ class Signup extends React.Component {
                 placeholder="Digite su nombre"
                 style={styles.textInput}
                 autoCapitalize="none"
-                //onChangeText={}
-                //value={}
               />
             </View>
 
@@ -67,8 +65,6 @@ class Signup extends React.Component {
                 placeholder="Digite su apellido"
                 style={styles.textInput}
                 autoCapitalize="none"
-                //onChangeText={}
-                //value={}
               />
             </View>
 
