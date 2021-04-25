@@ -47,10 +47,10 @@ class MainTabScreen extends React.Component {
           name="Settings"
           component={ConfigurationStackScreen}
           options={{
-            tabBarLabel: "Configuración",
+            tabBarLabel: "Nosotros",
             tabBarColor: "#0066b0",
             tabBarIcon: ({ color }) => (
-              <Icon name="cog" color={color} size={26} />
+              <Icon name="information-circle-outline" color={color} size={26} />
             ),
           }}
         />
